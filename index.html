@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal da Transparência - Senado Federal</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="dark-theme">
+    <nav class="sidebar">
+        <div class="logo">
+            <span class="logo-icon">🏛️</span>
+            <span class="logo-text">Senado<span>Portal</span></span>
+        </div>
+        <ul class="nav-links">
+            <li class="active" data-view="dashboard"><a href="#"><span>📊</span> Dashboard</a></li>
+            <li data-view="senadores"><a href="#"><span>👥</span> Senadores</a></li>
+            <li data-view="materias"><a href="#"><span>📄</span> Matérias</a></li>
+            <li data-view="agenda"><a href="#"><span>📅</span> Agenda</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <p>Dados Abertos do Senado</p>
+        </div>
+    </nav>
+
+    <main class="content">
+        <header class="top-bar">
+            <div class="search-container">
+                <input type="text" id="global-search" placeholder="Buscar senadores, projetos...">
+                <span class="search-icon">🔍</span>
+            </div>
+            <div class="user-profile">
+                <span class="theme-toggle">🌙</span>
+            </div>
+        </header>
+
+        <section id="view-container">
+            <!-- Content will be dynamically injected here -->
+            <div id="loader" class="loader-container">
+                <div class="loader"></div>
+                <p>Carregando dados do Senado...</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="api.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
