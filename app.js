@@ -8,6 +8,11 @@ const App = {
         idMap: {},
         selectedSenatorId: null,
         currentSenatorExpenses: [],
+        currentSenatorAutorias: [],
+        currentSenatorRelatorias: [],
+        displayedExpensesCount: 20,
+        displayedAutoriasCount: 15,
+        displayedRelatoriasCount: 10,
         topSpenders: [],
         topEconomy: [],
 
@@ -400,31 +405,13 @@ const App = {
                 return dateB - dateA;
             });
 
+            this.state.currentSenatorAutorias = autoriasArray;
+            this.state.displayedAutoriasCount = 15;
+
             const getMateriaBadgeClass = (tipo) => {
                 const map = { 'PL': 'badge-pl', 'PLS': 'badge-pl', 'PLC': 'badge-pl', 'PEC': 'badge-pec', 'REQ': 'badge-req', 'RQS': 'badge-req', 'MPV': 'badge-mpv', 'PRS': 'badge-prs', 'PDL': 'badge-pdl' };
                 return map[tipo?.toUpperCase()] || 'badge-outro';
             };
-            const autoriasToShow = autoriasArray.slice(0, 15);
-            const autoriasCardsHTML = autoriasToShow.length > 0 ? autoriasToShow.map(a => {
-                const mat = a.Materia || a.IdentificacaoMateria || {};
-                const sigla = mat.SiglaSubtipoMateria || mat.Sigla || '';
-                const numero = mat.NumeroMateria || mat.Numero || '';
-                const ano = mat.AnoMateria || mat.Ano || '';
-                const ementa = (a.EmentaMateria || mat.EmentaMateria || mat.Ementa || 'Ementa não disponível').substring(0, 150);
-                const data = a.DataAutoria || mat.Data || '';
-                const dataFormatted = data ? new Date(data).toLocaleDateString('pt-BR') : '';
-                const autorPrincipal = a.IndicadorAutorPrincipal === 'Sim' ? '<span class="tag tag-autor-principal">Autor Principal</span>' : '';
-                return `
-                    <div class="atividade-card autoria-card">
-                        <div class="atividade-card-header">
-                            <span class="materia-type-badge ${getMateriaBadgeClass(sigla)}">${sigla} ${numero}/${ano}</span>
-                            ${autorPrincipal}
-                        </div>
-                        <p class="atividade-ementa">${ementa}${ementa.length >= 150 ? '...' : ''}</p>
-                        ${dataFormatted ? `<span class="atividade-data">📅 ${dataFormatted}</span>` : ''}
-                    </div>
-                `;
-            }).join('') : '<p class="atividade-empty">Nenhuma autoria registrada.</p>';
 
             // Process Relatorias
             const relatoriasArray = Array.isArray(rawRelatorias) ? rawRelatorias : (rawRelatorias ? [rawRelatorias] : []);
@@ -436,29 +423,8 @@ const App = {
                 return dateB - dateA;
             });
 
-            const relatoriasToShow = relatoriasArray.slice(0, 10);
-            const relatoriasCardsHTML = relatoriasToShow.length > 0 ? relatoriasToShow.map(r => {
-                const mat = r.Materia || r.IdentificacaoMateria || {};
-                const sigla = mat.SiglaSubtipoMateria || mat.Sigla || '';
-                const numero = mat.NumeroMateria || mat.Numero || '';
-                const ano = mat.AnoMateria || mat.Ano || '';
-                const ementa = (mat.EmentaMateria || mat.Ementa || 'Ementa não disponível').substring(0, 150);
-                const comissao = r.IdentificacaoComissao?.SiglaComissao || r.SiglaComissao || '';
-                const dataDesignacao = r.DataDesignacao || '';
-                const dataFormatted = dataDesignacao ? new Date(dataDesignacao).toLocaleDateString('pt-BR') : '';
-                const tipoRelator = r.DescricaoTipoRelator || '';
-                return `
-                    <div class="atividade-card relatoria-card">
-                        <div class="atividade-card-header">
-                            <span class="materia-type-badge ${getMateriaBadgeClass(sigla)}">${sigla} ${numero}/${ano}</span>
-                            ${comissao ? `<span class="tag tag-comissao-rel">${comissao}</span>` : ''}
-                        </div>
-                        ${tipoRelator ? `<p class="atividade-tipo-relator">${tipoRelator}</p>` : ''}
-                        <p class="atividade-ementa">${ementa}${ementa.length >= 150 ? '...' : ''}</p>
-                        ${dataFormatted ? `<span class="atividade-data">📅 Designação: ${dataFormatted}</span>` : ''}
-                    </div>
-                `;
-            }).join('') : '<p class="atividade-empty">Nenhuma relatoria registrada.</p>';
+            this.state.currentSenatorRelatorias = relatoriasArray;
+            this.state.displayedRelatoriasCount = 10;
 
             // Process Lideranças
             const liderancasArray = Array.isArray(rawLiderancas) ? rawLiderancas : (rawLiderancas ? [rawLiderancas] : []);
@@ -525,12 +491,14 @@ const App = {
                         <button class="atuacao-tab" data-tab="comissoes">🏛️ Comissões <span class="tab-count">${currentComissoes.length}</span></button>
                     </div>
                     <div class="atuacao-tab-content" id="tab-autorias">
-                        <div class="atividades-grid">${autoriasCardsHTML}</div>
-                        ${autoriasArray.length > 15 ? `<p class="atividade-more">Exibindo 15 de ${autoriasArray.length} autorias</p>` : ''}
+                        <div id="autorias-list-container" class="atividades-grid"></div>
+                        <p id="autorias-count-info" class="atividade-more"></p>
+                        <div id="load-more-autorias-container" class="load-more-container"></div>
                     </div>
                     <div class="atuacao-tab-content" id="tab-relatorias" style="display:none;">
-                        <div class="atividades-grid">${relatoriasCardsHTML}</div>
-                        ${relatoriasArray.length > 10 ? `<p class="atividade-more">Exibindo 10 de ${relatoriasArray.length} relatorias</p>` : ''}
+                        <div id="relatorias-list-container" class="atividades-grid"></div>
+                        <p id="relatorias-count-info" class="atividade-more"></p>
+                        <div id="load-more-relatorias-container" class="load-more-container"></div>
                     </div>
                     <div class="atuacao-tab-content" id="tab-liderancas" style="display:none;">
                         <div class="atividades-grid">${liderancasCardsHTML}</div>
@@ -715,6 +683,8 @@ const App = {
 
             // Initial render of detailed table
             this.renderDetailedExpensesTable();
+            this.renderAutoriasList();
+            this.renderRelatoriasList();
 
             // Bind tab switching
             document.querySelectorAll('.profile-tab').forEach(btn => {
@@ -916,6 +886,113 @@ const App = {
     normalizeStr(str) {
         if (!str) return '';
         return str.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    },
+
+    getMateriaBadgeClass(tipo) {
+        const map = {
+            'PL': 'badge-pl', 'PLS': 'badge-pl', 'PLC': 'badge-pl',
+            'PEC': 'badge-pec', 'REQ': 'badge-req', 'RQS': 'badge-req',
+            'MPV': 'badge-mpv', 'PRS': 'badge-prs', 'PDL': 'badge-pdl'
+        };
+        return map[tipo?.toUpperCase()] || 'badge-outro';
+    },
+
+    renderAutoriasList() {
+        const container = document.getElementById('autorias-list-container');
+        const countInfo = document.getElementById('autorias-count-info');
+        const loadMoreContainer = document.getElementById('load-more-autorias-container');
+        if (!container) return;
+
+        const list = this.state.currentSenatorAutorias;
+        const toShow = list.slice(0, this.state.displayedAutoriasCount);
+
+        container.innerHTML = toShow.map(a => {
+            const mat = a.Materia || a.IdentificacaoMateria || {};
+            const sigla = mat.SiglaSubtipoMateria || mat.Sigla || '';
+            const numero = mat.NumeroMateria || mat.Numero || '';
+            const ano = mat.AnoMateria || mat.Ano || '';
+            const ementa = (a.EmentaMateria || mat.EmentaMateria || mat.Ementa || 'Ementa não disponível').substring(0, 150);
+            const data = a.DataAutoria || mat.Data || '';
+            const dataFormatted = data ? new Date(data).toLocaleDateString('pt-BR') : '';
+            const autorPrincipal = a.IndicadorAutorPrincipal === 'Sim' ? '<span class="tag tag-autor-principal">Autor Principal</span>' : '';
+
+            return `
+                <div class="atividade-card autoria-card">
+                    <div class="atividade-card-header">
+                        <span class="materia-type-badge ${this.getMateriaBadgeClass(sigla)}">${sigla} ${numero}/${ano}</span>
+                        ${autorPrincipal}
+                    </div>
+                    <p class="atividade-ementa">${ementa}${ementa.length >= 150 ? '...' : ''}</p>
+                    ${dataFormatted ? `<span class="atividade-data">📅 ${dataFormatted}</span>` : ''}
+                </div>
+            `;
+        }).join('');
+
+        if (countInfo) {
+            countInfo.innerText = `Exibindo ${toShow.length} de ${list.length} autorias`;
+        }
+
+        if (loadMoreContainer) {
+            if (this.state.displayedAutoriasCount < list.length) {
+                loadMoreContainer.innerHTML = `<button id="btn-load-more-autorias" class="btn-secondary">Exibir Mais Autorias</button>`;
+                document.getElementById('btn-load-more-autorias').addEventListener('click', () => {
+                    this.state.displayedAutoriasCount += 15;
+                    this.renderAutoriasList();
+                });
+            } else {
+                loadMoreContainer.innerHTML = '';
+            }
+        }
+    },
+
+    renderRelatoriasList() {
+        const container = document.getElementById('relatorias-list-container');
+        const countInfo = document.getElementById('relatorias-count-info');
+        const loadMoreContainer = document.getElementById('load-more-relatorias-container');
+        if (!container) return;
+
+        const list = this.state.currentSenatorRelatorias;
+        const toShow = list.slice(0, this.state.displayedRelatoriasCount);
+
+        container.innerHTML = toShow.map(r => {
+            const mat = r.Materia || r.IdentificacaoMateria || {};
+            const sigla = mat.SiglaSubtipoMateria || mat.Sigla || '';
+            const numero = mat.NumeroMateria || mat.Numero || '';
+            const ano = mat.AnoMateria || mat.Ano || '';
+            const ementa = (mat.EmentaMateria || mat.Ementa || 'Ementa não disponível').substring(0, 150);
+            const comissao = r.IdentificacaoComissao?.SiglaComissao || r.SiglaComissao || '';
+            const dataDesignacao = r.DataDesignacao || '';
+            const dataFormatted = dataDesignacao ? new Date(dataDesignacao).toLocaleDateString('pt-BR') : '';
+            const tipoRelator = r.DescricaoTipoRelator || '';
+
+            return `
+                <div class="atividade-card relatoria-card">
+                    <div class="atividade-card-header">
+                        <span class="materia-type-badge ${this.getMateriaBadgeClass(sigla)}">${sigla} ${numero}/${ano}</span>
+                        ${comissao ? `<span class="tag tag-comissao-rel">${comissao}</span>` : ''}
+                    </div>
+                    ${tipoRelator ? `<p class="atividade-tipo-relator">${tipoRelator}</p>` : ''}
+                    <p class="atividade-ementa">${ementa}${ementa.length >= 150 ? '...' : ''}</p>
+                    ${dataFormatted ? `<span class="atividade-data">📅 Designação: ${dataFormatted}</span>` : ''}
+                </div>
+            `;
+        }).join('');
+
+        if (countInfo) {
+            countInfo.innerText = `Exibindo ${toShow.length} de ${list.length} relatorias`;
+        }
+
+        if (loadMoreContainer) {
+            if (this.state.displayedRelatoriasCount < list.length) {
+                loadMoreContainer.innerHTML = `<button id="btn-load-more-relatorias" class="btn-secondary">Exibir Mais Relatorias</button>`;
+                document.getElementById('btn-load-more-relatorias').addEventListener('click', () => {
+                    this.state.displayedRelatoriasCount += 10;
+                    this.renderRelatoriasList();
+                });
+            } else {
+                loadMoreContainer.innerHTML = '';
+            }
+        }
     },
 
     renderError(msg) {
