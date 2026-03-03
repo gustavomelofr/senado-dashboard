@@ -10,6 +10,22 @@
     --accent-gold: #ecc94b;
     --gradient-primary: linear-gradient(135deg, #1a365d 0%, #065666 100%);
     --font-main: 'Inter', sans-serif;
+    --white: #ffffff;
+    --black: #000000;
+}
+
+/* Light Theme Variables */
+.light-theme {
+    --bg-dark: #f7fafc;
+    --sidebar-bg: #edf2f7;
+    --card-bg: #ffffff;
+    --glass-border: #e2e8f0;
+    --text-primary: #1a202c;
+    --text-secondary: #4a5568;
+    --accent-blue: #2b6cb0;
+    --accent-green: #38a169;
+    --accent-gold: #b7791f;
+    --gradient-primary: linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%);
 }
 
 * {
@@ -109,6 +125,30 @@ body {
     top: 0;
     z-index: 10;
     border-bottom: 1px solid var(--glass-border);
+}
+
+.icon-btn {
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-blue);
+    transform: scale(1.05);
+}
+
+.light-theme .icon-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
 }
 
 .search-container {
@@ -304,7 +344,11 @@ body {
     border-radius: 30px;
     object-fit: cover;
     border: 4px solid var(--accent-gold);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.light-theme .profile-photo-large {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
 .profile-info h1 {
@@ -1284,6 +1328,97 @@ body {
 .ranking-card:hover {
     transform: translateY(-5px);
     border-color: var(--gold-primary);
+}
+
+/* Senator Profile Tabs */
+.profile-tabs-nav {
+    display: flex;
+    gap: 1rem;
+    margin: 2rem 0;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 0.5rem;
+}
+
+.profile-tab {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.profile-tab.active {
+    color: var(--accent-gold);
+}
+
+.profile-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -0.6rem;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--accent-gold);
+    border-radius: 3px 3px 0 0;
+}
+
+.profile-tab-content {
+    display: none !important;
+}
+
+.profile-tab-content.active {
+    display: block !important;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Despesas Chart & Summary */
+.expense-summary-container {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.expense-total-card {
+    background: rgba(236, 201, 75, 0.1);
+    border: 1px solid rgba(236, 201, 75, 0.2);
+    border-radius: 16px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+}
+
+.expense-total-card h3 {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.expense-total-card .total-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent-gold);
+}
+
+.chart-container-large {
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    height: 350px;
+    position: relative;
+}
+
+@media (max-width: 900px) {
+    .expense-summary-container {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Economy Ranking Specifics */

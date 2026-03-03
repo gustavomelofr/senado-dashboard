@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body class="dark-theme">
@@ -18,10 +19,11 @@
             <span class="logo-text">Senado<span>Portal</span></span>
         </div>
         <ul class="nav-links">
-            <li class="active" data-view="dashboard"><a href="#"><span>📊</span> Dashboard</a></li>
-            <li data-view="senadores"><a href="#"><span>👥</span> Senadores</a></li>
-            <li data-view="materias"><a href="#"><span>📄</span> Matérias</a></li>
-            <li data-view="agenda"><a href="#"><span>📅</span> Agenda</a></li>
+            <li class="active" data-view="dashboard" id="nav-dashboard"><a href="#dashboard"><span>📊</span>
+                    Dashboard</a></li>
+            <li data-view="senadores" id="nav-senadores"><a href="#senadores"><span>👥</span> Senadores</a></li>
+            <li data-view="materias" id="nav-materias"><a href="#materias"><span>📄</span> Matérias</a></li>
+            <li data-view="agenda" id="nav-agenda"><a href="#agenda"><span>📅</span> Agenda</a></li>
         </ul>
         <div class="sidebar-footer">
             <p>Dados Abertos do Senado</p>
@@ -35,7 +37,9 @@
                 <span class="search-icon">🔍</span>
             </div>
             <div class="user-profile">
-                <span class="theme-toggle">🌙</span>
+                <button id="theme-toggle-btn" class="icon-btn" title="Alternar Tema">
+                    <span class="theme-toggle-icon">🌙</span>
+                </button>
             </div>
         </header>
 

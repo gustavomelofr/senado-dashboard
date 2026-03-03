@@ -14,7 +14,8 @@ const App = {
         expensesChart: null,
         displayedExpensesCount: 20,
         expenseFilter: '',
-        isLoading: true
+        isLoading: true,
+        isDarkTheme: true
     },
 
     async init() {
@@ -24,19 +25,43 @@ const App = {
     },
 
     bindEvents() {
-        document.querySelectorAll('.nav-links li').forEach(li => {
-            li.addEventListener('click', () => {
-                const view = li.getAttribute('data-view');
-                if (view) {
-                    window.location.hash = view;
+        const themeBtn = document.getElementById('theme-toggle-btn');
+        if (themeBtn) {
+            themeBtn.addEventListener('click', () => this.toggleTheme());
+        }
+
+        const searchInput = document.getElementById('global-search');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.handleSearch(e.target.value);
+            });
+        }
+
+        // Ensure nav links trigger routing if clicked directly
+        document.querySelectorAll('.nav-links a').forEach(a => {
+            a.addEventListener('click', (e) => {
+                const targetHash = a.getAttribute('href');
+                if (targetHash && targetHash.startsWith('#')) {
+                    // HashChange will handle the rest
                 }
             });
         });
+    },
 
-        const searchInput = document.getElementById('global-search');
-        searchInput.addEventListener('input', (e) => {
-            this.handleSearch(e.target.value);
-        });
+    toggleTheme() {
+        this.state.isDarkTheme = !this.state.isDarkTheme;
+        document.body.classList.toggle('dark-theme', this.state.isDarkTheme);
+        document.body.classList.toggle('light-theme', !this.state.isDarkTheme);
+
+        const icon = document.querySelector('.theme-toggle-icon');
+        if (icon) {
+            icon.textContent = this.state.isDarkTheme ? '🌙' : '☀️';
+        }
+
+        // Re-render chart if active to match theme colors
+        if (this.state.expensesChart) {
+            this.renderExpensesChart();
+        }
     },
 
     async handleRouting() {
@@ -596,77 +621,97 @@ const App = {
                         </div>
                     </div>
 
-                    <div class="profile-grid">
-                        <div class="mandates-section">
-                            <h3 style="margin-bottom: 1.5rem; color: var(--accent-gold);">Dados do Mandato</h3>
-                            <div class="info-box">
-                                <div class="info-label">Participação / Status</div>
-                                <div class="info-value" style="font-size: 1.2rem; margin-top: 5px;">${mandato.DescricaoParticipacao || 'Não informado'}</div>
-                            </div>
-                            <div class="info-box" style="margin-top: 20px;">
-                                <div class="info-label">E-mail Oficial</div>
-                                <div class="info-value">${info.EmailParlamentar || 'Não informado'}</div>
-                            </div>
-                        </div>
+                </div>
 
-                        <div class="expenses-section">
-                            <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                                <h3>Resumo de Gastos (2024)</h3>
-                                <div class="total-expense" style="color: var(--accent-gold); font-size: 1.8rem;">
-                                    ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalExpenses)}
+                <div class="profile-tabs-nav">
+                    <button class="profile-tab active" data-tab="resumo">Resumo</button>
+                    <button class="profile-tab" data-tab="atuacao">Atuação</button>
+                    <button class="profile-tab" data-tab="despesas">Despesas</button>
+                </div>
+
+                <div id="profile-tabs-content">
+                    <div id="tab-resumo" class="profile-tab-content active">
+                        <div class="profile-grid">
+                            <div class="mandates-section">
+                                <h3 style="margin-bottom: 1.5rem; color: var(--accent-gold);">Dados do Mandato</h3>
+                                <div class="info-box">
+                                    <div class="info-label">Participação / Status</div>
+                                    <div class="info-value" style="font-size: 1.2rem; margin-top: 5px;">${mandato.DescricaoParticipacao || 'Não informado'}</div>
+                                </div>
+                                <div class="info-box" style="margin-top: 20px;">
+                                    <div class="info-label">E-mail Oficial</div>
+                                    <div class="info-value">${info.EmailParlamentar || 'Não informado'}</div>
                                 </div>
                             </div>
-                            <div class="expenses-list">
-                                ${expensesSummaryHTML}
+
+                            <div class="commissions-section">
+                                <h3 style="margin-bottom: 1.5rem; color: var(--accent-gold);">Comissões Atuais</h3>
+                                <div class="chips-container">
+                                    ${chipsComissoesHTML}
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    ${atuacaoFullHTML}
-
-                    <h3 style="margin: 2.5rem 0 1.5rem; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; font-size: 1.5rem;">
-                        Painel de Desempenho
-                    </h3>
-                    <div class="profile-grid">
-                        <div class="painel-card">
+                        <div class="painel-card" style="margin-top: 2rem;">
                             <h3 style="color: var(--accent-gold); margin-bottom: 1rem;"><i class="fas fa-vote-yea"></i> Últimas Votações</h3>
                             <div class="votacoes-list">
                                 ${votacoesHTML}
                             </div>
                         </div>
-
-                        <div class="painel-card">
-                            <h3 style="color: var(--accent-gold); margin-bottom: 1rem;"><i class="fas fa-users"></i> Comissões Atuais</h3>
-                            <div class="chips-container">
-                                ${chipsComissoesHTML}
-                            </div>
-                        </div>
                     </div>
 
-                    <div class="detailed-expenses-wrapper">
-                        <div class="expense-controls">
-                            <h3>Detalhamento das Despesas</h3>
-                            <div class="expense-search">
-                                <input type="text" id="expense-search-input" placeholder="Buscar por fornecedor ou tipo...">
+                    <div id="tab-atuacao" class="profile-tab-content">
+                        ${atuacaoFullHTML}
+                    </div>
+
+                    <div id="tab-despesas" class="profile-tab-content">
+                        <div class="expense-summary-container">
+                            <div class="expense-total-card">
+                                <h3>Total Reembolsado (2024)</h3>
+                                <div class="total-value">${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalExpenses)}</div>
+                            </div>
+                            <div class="chart-container-large">
+                                <canvas id="expenses-chart"></canvas>
                             </div>
                         </div>
-                        
-                        <div id="detailed-expenses-table-container" class="table-container">
-                            <!-- Table injected here -->
-                        </div>
-                        
-                        <div id="load-more-container" class="load-more-container">
-                            <!-- Button injected here -->
+
+                        <div class="detailed-expenses-wrapper">
+                            <div class="expense-controls">
+                                <h3>Detalhamento das Despesas</h3>
+                                <div class="expense-search">
+                                    <input type="text" id="expense-search-input" placeholder="Buscar por fornecedor ou tipo...">
+                                </div>
+                            </div>
+                            
+                            <div id="detailed-expenses-table-container" class="table-container">
+                                <!-- Table injected here -->
+                            </div>
+                            
+                            <div id="load-more-container" class="load-more-container">
+                                <!-- Button injected here -->
+                            </div>
                         </div>
                     </div>
                 </div>
-    `;
+            `;
 
+            // Initial render of detailed table
             this.renderDetailedExpensesTable();
 
-            // Bind back button
-            document.getElementById('btn-back-profile').addEventListener('click', () => {
-                window.history.back();
+            // Bind tab switching
+            document.querySelectorAll('.profile-tab').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tabId = btn.getAttribute('data-tab');
+                    document.querySelectorAll('.profile-tab').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.profile-tab-content').forEach(c => c.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById(`tab-${tabId}`).classList.add('active');
+
+                    if (tabId === 'despesas') {
+                        // Chart needs to be rendered after container is visible
+                        setTimeout(() => this.renderExpensesChart(), 100);
+                    }
+                });
             });
 
             // Bind search input
@@ -676,14 +721,14 @@ const App = {
                 this.renderDetailedExpensesTable();
             });
 
-            // Bind Atuação tabs
+            // Bind sub-tabs in Atuação (authorship, etc.)
             document.querySelectorAll('.atuacao-tab').forEach(tab => {
                 tab.addEventListener('click', () => {
                     document.querySelectorAll('.atuacao-tab').forEach(t => t.classList.remove('active'));
                     document.querySelectorAll('.atuacao-tab-content').forEach(c => c.style.display = 'none');
                     tab.classList.add('active');
-                    const targetTab = tab.getAttribute('data-tab');
-                    const targetContent = document.getElementById(`tab-${targetTab}`);
+                    const targetTabId = tab.getAttribute('data-tab');
+                    const targetContent = document.getElementById(`tab-${targetTabId}`);
                     if (targetContent) targetContent.style.display = 'block';
                 });
             });
@@ -694,9 +739,71 @@ const App = {
         }
     },
 
+    renderExpensesChart() {
+        const ctx = document.getElementById('expenses-chart');
+        if (!ctx) return;
+
+        const groups = {};
+        this.state.currentSenatorExpenses.forEach(e => {
+            const type = e.tipoDespesa || 'Outros';
+            groups[type] = (groups[type] || 0) + (e.valorReembolsado || 0);
+        });
+
+        const sortedGroups = Object.entries(groups).sort((a, b) => b[1] - a[1]);
+        const labels = sortedGroups.map(g => g[0]);
+        const data = sortedGroups.map(g => g[1]);
+
+        if (this.state.expensesChart) {
+            this.state.expensesChart.destroy();
+        }
+
+        const isDark = this.state.isDarkTheme;
+        const textColor = isDark ? '#a0aec0' : '#4a5568';
+        const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+
+        this.state.expensesChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Valor Total',
+                    data: data,
+                    backgroundColor: 'rgba(236, 201, 75, 0.6)',
+                    borderColor: '#ecc94b',
+                    borderWidth: 1,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        grid: { color: gridColor },
+                        ticks: {
+                            color: textColor,
+                            callback: (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumSignificantDigits: 3 }).format(value)
+                        }
+                    },
+                    y: { grid: { display: false }, ticks: { color: textColor } }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.raw)
+                        }
+                    }
+                }
+            }
+        });
+    },
+
     renderDetailedExpensesTable() {
         const container = document.getElementById('detailed-expenses-table-container');
         const loadMoreContainer = document.getElementById('load-more-container');
+        if (!container) return;
 
         const filtered = this.state.currentSenatorExpenses.filter(e => {
             const provider = (e.nomeFornecedor || e.fornecedor || '').toLowerCase();
@@ -760,12 +867,37 @@ const App = {
     },
 
     handleSearch(query) {
-        if (this.state.currentView !== 'senadores') return;
+        if (!query) {
+            if (this.state.currentView === 'senadores') {
+                this.renderSenators(this.state.senators);
+            }
+            return;
+        }
+
+        const normalizedQuery = this.normalizeStr(query);
+
         const filtered = this.state.senators.filter(s =>
-            s.IdentificacaoParlamentar.NomeParlamentar.toLowerCase().includes(query.toLowerCase()) ||
-            s.IdentificacaoParlamentar.SiglaPartidoParlamentar.toLowerCase().includes(query.toLowerCase())
+            this.normalizeStr(s.IdentificacaoParlamentar.NomeParlamentar).includes(normalizedQuery) ||
+            this.normalizeStr(s.IdentificacaoParlamentar.SiglaPartidoParlamentar).includes(normalizedQuery) ||
+            this.normalizeStr(s.IdentificacaoParlamentar.UfParlamentar).includes(normalizedQuery)
         );
-        this.renderSenators(filtered);
+
+        if (this.state.currentView !== 'senadores') {
+            window.location.hash = 'senadores';
+            // Wait for routing/loading to complete before rendering filtered list
+            setTimeout(() => {
+                if (this.state.senators.length > 0) {
+                    this.renderSenators(filtered);
+                }
+            }, 150);
+        } else {
+            this.renderSenators(filtered);
+        }
+    },
+
+    normalizeStr(str) {
+        if (!str) return '';
+        return str.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
     },
 
     renderError(msg) {
