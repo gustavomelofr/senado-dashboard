@@ -390,6 +390,16 @@ const App = {
 
             // Process Autorias
             const autoriasArray = Array.isArray(rawAutorias) ? rawAutorias : (rawAutorias ? [rawAutorias] : []);
+
+            // Sort by date descending
+            autoriasArray.sort((a, b) => {
+                const matA = a.Materia || a.IdentificacaoMateria || {};
+                const matB = b.Materia || b.IdentificacaoMateria || {};
+                const dateA = new Date(a.DataAutoria || matA.Data || 0);
+                const dateB = new Date(b.DataAutoria || matB.Data || 0);
+                return dateB - dateA;
+            });
+
             const getMateriaBadgeClass = (tipo) => {
                 const map = { 'PL': 'badge-pl', 'PLS': 'badge-pl', 'PLC': 'badge-pl', 'PEC': 'badge-pec', 'REQ': 'badge-req', 'RQS': 'badge-req', 'MPV': 'badge-mpv', 'PRS': 'badge-prs', 'PDL': 'badge-pdl' };
                 return map[tipo?.toUpperCase()] || 'badge-outro';
@@ -418,6 +428,14 @@ const App = {
 
             // Process Relatorias
             const relatoriasArray = Array.isArray(rawRelatorias) ? rawRelatorias : (rawRelatorias ? [rawRelatorias] : []);
+
+            // Sort by date descending
+            relatoriasArray.sort((a, b) => {
+                const dateA = new Date(a.DataDesignacao || 0);
+                const dateB = new Date(b.DataDesignacao || 0);
+                return dateB - dateA;
+            });
+
             const relatoriasToShow = relatoriasArray.slice(0, 10);
             const relatoriasCardsHTML = relatoriasToShow.length > 0 ? relatoriasToShow.map(r => {
                 const mat = r.Materia || r.IdentificacaoMateria || {};
