@@ -42,14 +42,12 @@ const App = {
             });
         }
 
-        // Ensure nav links trigger routing if clicked directly
-        document.querySelectorAll('.nav-links a').forEach(a => {
-            a.addEventListener('click', (e) => {
-                const targetHash = a.getAttribute('href');
-                if (targetHash && targetHash.startsWith('#')) {
-                    // HashChange will handle the rest
-                }
-            });
+        // Back button delegation for profile and loading states
+        document.getElementById('view-container').addEventListener('click', (e) => {
+            const backBtn = e.target.closest('#btn-back-profile');
+            if (backBtn) {
+                window.history.back();
+            }
         });
     },
 
@@ -306,10 +304,6 @@ const App = {
             </div>
         `;
 
-        // Bind back button immediately
-        document.getElementById('btn-back-profile').addEventListener('click', () => {
-            window.history.back();
-        });
 
         try {
             const [details, ceapsData, rawComissoes, rawCargos, rawVotacoes, rawAutorias, rawRelatorias, rawLiderancas] = await Promise.all([
